@@ -1,0 +1,381 @@
+<!DOCTYPE>
+<html>
+<head>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.34/browser.min.js"></script>
+    <script type="text/babel">
+    
+    let button;
+
+    let xhr;
+
+    let body;
+
+    let wordarray;
+
+    let title;
+
+    let wordcache;
+
+    let arrayIndex;
+
+    let message;
+
+    let buttonGetSavedMadlib;
+
+    let savedMadlibContent;
+
+    let buttonGetUnfilledMadlib;
+
+    const init = () => {
+      //button = document.querySelector("#buttonGet");
+      buttonGetUnfilledMadlib = document.querySelector("#GetUnfilled");
+      body = document.querySelector("#body");
+      title = document.querySelector("#title");
+      buttonGetSavedMadlib = document.querySelector("#buttonGetSavedMadlib");
+      savedMadlibContent = document.querySelector("#savedMadLibcontent")
+      wordcache = [];
+      const sendgetAJAX = (e) => getAJAX(e);
+      const getsavedMB = (e) => getSavedmadlib(e);
+      const getTopics = (e) => getUnfilledAJAX(e);
+      buttonGetSavedMadlib.addEventListener("click",getsavedMB);
+      buttonGetUnfilledMadlib.addEventListener("click",getTopics);
+      //button.addEventListener('click',sendgetAJAX);
+      /*button.addEventListener('click',function() {
+          console.log("click");
+      });
+      console.log('start');*/
+    };
+
+    //get topics
+    const getUnfilledAJAX = (e) => {
+
+        while (savedMadLibcontent.hasChildNodes()) 
+        {
+            savedMadLibcontent.removeChild(savedMadLibcontent.firstChild);
+        }
+
+        let status = document.querySelector("#status");
+        if(status.innerHTML != "")
+        {
+            status.innerHTML = "";
+        }
+
+        xhr = new XMLHttpRequest();
+        xhr.open('GET','/gettopics');
+        xhr.setRequestHeader('Accept','application/json');
+        xhr.send();
+
+        xhr.onload = () => gettopics(xhr,e);
+        
+      e.preventDefault();
+        
+      return false;
+    }
+
+    //show topics
+    const gettopics = (xhr,e) => {
+        button = document.createElement("input");
+        button.setAttribute("type","button");
+        button.setAttribute("id","ButtonGet");
+        button.setAttribute("value","Get this MadLib");
+
+        let object = JSON.parse(xhr.response);
+        let titles = object.titles;
+
+        var selectlist = document.createElement("select");
+        selectlist.setAttribute("id","mySelect");
+
+        for(let x =0;x<titles.length;x++)
+        {
+            var option = document.createElement("option");
+            option.value = titles[x];
+            option.text = titles[x];
+            selectlist.appendChild(option);
+        }
+
+        let placedSelectlist = document.querySelector("#mySelect");
+        let placedButton = document.querySelector("#ButtonGet");
+        
+        if(placedSelectlist != undefined)
+        {
+            placedSelectlist.parentNode.removeChild(placedSelectlist);
+            placedButton.parentNode.removeChild(placedButton);
+        }
+
+        document.body.appendChild(selectlist);
+        document.body.appendChild(button);
+        button.addEventListener("click", (e) => {
+
+            let select = document.getElementById("mySelect");
+            let chosen = select.options[select.selectedIndex].value;
+            let params = `?chosen=${chosen}`;
+            const sendgetAJAX = (e,params) => getAJAX(e,params);
+            sendgetAJAX(e,params);
+        });
+    };
+
+
+    //get the form of selected category
+    const getAJAX = (e,input) => {
+      xhr = new XMLHttpRequest();
+      xhr.open('GET','/madlib' + input);
+      xhr.setRequestHeader("Accept","application/json");
+      xhr.send();
+      
+      xhr.onload = () => handleAJAXonload(xhr);
+        
+      e.preventDefault();
+        
+      return false;
+        
+        
+    };
+
+    //handle the form to insert words into madlibs
+    const handleAJAXonload = (xhr) => {
+        //get the response text and wordbank 
+        const object = JSON.parse(xhr.response);
+        console.dir(object);
+        message = JSON.stringify(object.madlib.page);
+        
+        //get the length
+        wordarray = object.madlib.wordbank;
+        console.log(wordarray.length);
+        let x = 0;
+        //create the title
+        let wordtitle = wordarray[x];
+        //set global index
+        arrayIndex = x;
+        title.textContent = `Enter in a ${wordtitle}`;
+        //create the input to recieve it
+        let wordfield = document.createElement("Input");
+        let button = document.createElement("Input");
+        wordfield.setAttribute("type","text");
+        wordfield.setAttribute("id","wordfiled");
+        button.setAttribute("type","button");
+        button.setAttribute("value","Press me to enter")
+        button.setAttribute("id","buttonclick");
+       
+        //delete the select list and get button 
+        var removebutton = document.querySelector("#ButtonGet");
+        var removeselect = document.querySelector("#mySelect");
+
+        removebutton.remove();
+        removeselect.remove();
+       
+        //add them to the field
+        document.body.appendChild(wordfield);
+        document.body.appendChild(button);
+        
+        //body.textContent = message;
+        
+         //if the button is clicked then add to the list and cycle the words
+        button.addEventListener("click", () => {
+           let wordfield = document.querySelector("#wordfiled");
+           let word = wordfield.value;
+           enterInaWord(word,xhr);
+        });
+        
+    };
+
+    //enter words into form and have them insert
+    const enterInaWord = (word,xhr) => {
+    
+    //change the title and let you enter a new word 
+    let arrayIndexString = arrayIndex.toString();
+    message = message.replace(arrayIndexString,word);
+    arrayIndex = arrayIndex + 1;
+    let wordtitle = wordarray[arrayIndex];
+    if(arrayIndex < wordarray.length)
+    {
+    title.textContent = `Enter in a ${wordtitle}`;
+    let wordfield = document.querySelector("#wordfiled");
+    wordfield.value = "";
+    }
+    else 
+    {
+        //create the result and put it on screen
+        let results = document.createElement("p");
+        results.setAttribute("id","result");
+        results.textContent = message;
+        //create button to post
+        let sendbutton = document.createElement("input");
+        sendbutton.setAttribute("type","button");
+        sendbutton.setAttribute("id","sendButton");
+        sendbutton.setAttribute("value","Post MadLib?");
+        
+        let resultlabel = document.createElement("h3");
+        resultlabel.setAttribute("id","resultLabel");
+        resultlabel.textContent = "Results";
+
+        //create an input to add in a new name
+        let namefield = document.createElement("input");
+        namefield.id = "name";
+
+        let namelabel = document.createElement("h3");
+        namelabel.id = "namelabel";
+        namelabel.innerHTML = "Name the poem"
+
+        //put new elements on the screen
+        document.body.appendChild(resultlabel);
+        document.body.appendChild(results);
+        document.body.appendChild(namelabel);
+        document.body.appendChild(namefield);
+        document.body.appendChild(sendbutton);
+        
+        //add button event
+        const addPoem = (e) => postResults(e);
+
+        sendbutton.addEventListener("click", addPoem);
+        
+        //remove the text field and input
+        let textfield = document.querySelector("#wordfiled");
+        let enterbutton = document.querySelector("#buttonclick");
+        textfield.remove();
+        enterbutton.remove();
+        title.textContent = "";
+
+    }
+};
+
+    //get the saved mad libs
+    const getSavedmadlib= (e) => {
+
+    while (savedMadLibcontent.hasChildNodes()) 
+    {
+        savedMadLibcontent.removeChild(savedMadLibcontent.firstChild);
+    }  
+
+    let select = document.querySelector("#mySelect");
+    let button = document.querySelector("#ButtonGet");
+
+    if(select != undefined)
+    {
+        select.parentNode.removeChild(select);
+        button.parentNode.removeChild(button);
+    }
+
+    let status = document.querySelector("#status");
+    if(status.innerHTML != "")
+    {
+    status.innerHTML = "";
+    }
+      xhr = new XMLHttpRequest();
+      xhr.open('GET','/savedMadlib');
+      xhr.setRequestHeader("Accept","application/json");
+      xhr.send();
+      
+      xhr.onload = () => handlesavedMadlibGet(xhr);
+        
+      e.preventDefault();
+        
+      return false;
+        
+        
+    };
+
+    //show it in body
+    const handlesavedMadlibGet = (xhr) => {
+        const object = JSON.parse(xhr.response);
+        console.dir(object.saveMadlib);
+        let saveMadlib = object.saveMadlib;
+        let keys = Object.keys(saveMadlib);
+    
+        if(keys.length == 0)
+        {
+            let madlib = document.createElement("p"); 
+            madlib.innerHTML = "{}";
+            savedMadLibcontent.appendChild(madlib);
+        }
+            for(let x =0;x < keys.length;x++)
+             {
+                 let title = document.createElement("h2");
+                 let madlib = document.createElement("p"); 
+                 title.innerHTML = keys[x];
+                madlib.innerHTML = saveMadlib[keys[x]];
+                savedMadLibcontent.appendChild(title);
+                savedMadLibcontent.appendChild(madlib);
+             }
+        
+    }
+
+//put saved data to server
+const postResults = (e) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("post","/addmadlib");
+    xhr.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+    xhr.setRequestHeader("Accept","application/json");
+
+    let results = document.querySelector("#result");
+    let name = document.querySelector("#name");
+    const formData = `saveMadlib=${results.textContent}&name=${name.value}`;
+    xhr.send(formData);
+    xhr.onload = () => handlepostRequest(xhr);
+    e.preventDefault();
+    return false;
+};
+
+//show response for posting
+const handlepostRequest = (xhr) => {
+
+    let results = document.querySelector("#result");
+    let name = document.querySelector("#name");
+    let resultlabel = document.querySelector("#resultLabel");
+    let namelabel = document.querySelector("#namelabel");
+    let button = document.querySelector("#sendButton");
+
+    results.parentNode.removeChild(results);
+    name.parentNode.removeChild(name);
+    resultlabel.parentNode.removeChild(resultlabel);
+    namelabel.parentNode.removeChild(namelabel);
+    button.parentNode.removeChild(button);
+
+
+    let content = document.querySelector("#status")
+
+    switch(xhr.status)
+    {
+        case 200:
+        content.innerHTML = "<b>Success</b>";
+        break;
+
+        case 201:
+        content.innerHTML = "<b>Created</b>";
+        break;
+
+        case 204:
+        content.innerHTML = "<b>Updated</b>";
+        break;
+
+        case 400:
+        content.innerHTML = "<b>Bad Request</b>";
+        break;
+
+        default:
+        content.innerHTML = "Error code not implemented by client";
+        break;
+
+    }
+
+
+};
+
+
+   window.onload = init;
+    
+    
+    </script>    
+</head>
+    <body>
+    
+     <button id="GetUnfilled" type="button">Get unfilled madlib</button>
+     <!-- <button id="buttonGet" type="button">Get madlib</button> -->
+     <button id="buttonGetSavedMadlib" type="button">Get saved madlib</button>
+    
+    
+    <p id="body"></p>
+    <h2 id="title"></h2>
+    <div id="savedMadLibcontent"></div>
+    <p id="status"></p>
+    </body>
+</html>
