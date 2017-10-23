@@ -70,163 +70,6 @@ var init = function init() {
     buttonGetSpecificMadlib.addEventListener("click", getSpecific);
 };
 
-//SENDING THE AJAX CODE TO THE SERVER
-
-//get all topics
-var getUnfilledAJAX = function getUnfilledAJAX(e) {
-
-    while (savedMadLibcontent.hasChildNodes()) {
-        savedMadLibcontent.removeChild(savedMadLibcontent.firstChild);
-    }
-    if (statusElm.innerHTML != "") {
-        statusElm.innerHTML = "";
-    }
-
-    xhr = new XMLHttpRequest();
-    xhr.open('GET', '/gettopics');
-    xhr.setRequestHeader('Accept', 'application/json');
-    xhr.send();
-
-    xhr.onload = function () {
-        return gettopics(xhr, e);
-    };
-
-    e.preventDefault();
-
-    return false;
-};
-
-//check status of page with head request
-var getHeadAJAX = function getHeadAJAX(e) {
-    xhr = new XMLHttpRequest();
-    xhr.open("HEAD", "/checkstatus");
-    xhr.setRequestHeader("Accept", "application/json");
-    xhr.send();
-
-    xhr.onload = function () {
-        return handlesavedMadlibGet(xhr, false);
-    };
-
-    e.preventDefault();
-
-    return false;
-};
-
-//get the form of selected category
-var getAJAX = function getAJAX(e, input) {
-    xhr = new XMLHttpRequest();
-    xhr.open('GET', '/madlib' + input);
-    xhr.setRequestHeader("Accept", "application/json");
-    xhr.send();
-
-    xhr.onload = function () {
-        return handleAJAXonload(xhr);
-    };
-
-    e.preventDefault();
-
-    return false;
-};
-
-//getSpecific MadLib AJAX
-var getSpecificAJAX = function getSpecificAJAX(e, input) {
-    xhr = new XMLHttpRequest();
-    xhr.open("GET", "/getSpecific" + input);
-    xhr.setRequestHeader("Accept", "application/json");
-    xhr.send();
-
-    xhr.onload = function () {
-        return handleAJAXSpecificMadLib(xhr);
-    };
-
-    e.preventDefault();
-
-    return false;
-};
-
-//get the saved mad libs
-var getSavedmadlib = function getSavedmadlib(e) {
-
-    xhr = new XMLHttpRequest();
-    xhr.open('GET', '/savedMadlib');
-    xhr.setRequestHeader("Accept", "application/json");
-    xhr.send();
-
-    xhr.onload = function () {
-        return handlesavedMadlibGet(xhr, true);
-    };
-
-    e.preventDefault();
-
-    return false;
-};
-
-//put saved data to server
-var postResults = function postResults(e) {
-    var xhr = new XMLHttpRequest();
-    xhr.open("post", "/addmadlib");
-    xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    xhr.setRequestHeader("Accept", "application/json");
-
-    var results = document.querySelector("#result");
-    var name = document.querySelector("#name");
-    var formData = "saveMadlib=" + results.textContent + "&name=" + name.value;
-    xhr.send(formData);
-    xhr.onload = function () {
-        return handlepostRequest(xhr);
-    };
-    e.preventDefault();
-    return false;
-};
-
-//get specific madlib setup
-var specificMadlibSetup = function specificMadlibSetup(e) {
-
-    RidElements();
-
-    var title = document.createElement("h2");
-    var input = document.createElement("input");
-    var button = document.createElement("input");
-    var div = document.createElement("div");
-
-    title.setAttribute("id", "specificTitle");
-    input.setAttribute("id", "specificInput");
-    button.setAttribute("id", "specificButton");
-    button.setAttribute("type", "button");
-    div.setAttribute("id", "SpecificDiv");
-
-    title.innerHTML = "Which one do you want?";
-    button.value = "Get this one";
-
-    title.style.position = "absolute";
-    title.style.top = "75%";
-    title.style.width = "100%";
-    title.style.textAlign = "center";
-
-    div.style.position = "absolute";
-    div.style.top = "85%";
-    div.style.width = "100%";
-
-    input.style.position = "absolute";
-    input.style.margin = "auto";
-    input.style.left = "44%";
-
-    button.style.position = "absolute";
-    button.style.left = "57%";
-
-    div.appendChild(button);
-    div.appendChild(input);
-    document.body.appendChild(title);
-    document.body.appendChild(div);
-
-    button.addEventListener("click", function (e) {
-
-        var input = document.querySelector("#specificInput").value;
-        var specificMLName = "?Input=" + input;
-        getSpecificAJAX(e, specificMLName);
-    });
-};
-
 ////////// HANDLING THE AJAX ONLOAD
 
 //handle the form to insert words into madlibs
@@ -704,3 +547,161 @@ var RidElements = function RidElements() {
 };
 
 window.onload = init;
+"use strict";
+
+//SENDING THE AJAX CODE TO THE SERVER
+
+//get all topics
+var getUnfilledAJAX = function getUnfilledAJAX(e) {
+
+    while (savedMadLibcontent.hasChildNodes()) {
+        savedMadLibcontent.removeChild(savedMadLibcontent.firstChild);
+    }
+    if (statusElm.innerHTML != "") {
+        statusElm.innerHTML = "";
+    }
+
+    xhr = new XMLHttpRequest();
+    xhr.open('GET', '/gettopics');
+    xhr.setRequestHeader('Accept', 'application/json');
+    xhr.send();
+
+    xhr.onload = function () {
+        return gettopics(xhr, e);
+    };
+
+    e.preventDefault();
+
+    return false;
+};
+
+//check status of page with head request
+var getHeadAJAX = function getHeadAJAX(e) {
+    xhr = new XMLHttpRequest();
+    xhr.open("HEAD", "/checkstatus");
+    xhr.setRequestHeader("Accept", "application/json");
+    xhr.send();
+
+    xhr.onload = function () {
+        return handlesavedMadlibGet(xhr, false);
+    };
+
+    e.preventDefault();
+
+    return false;
+};
+
+//get the form of selected category
+var getAJAX = function getAJAX(e, input) {
+    xhr = new XMLHttpRequest();
+    xhr.open('GET', '/madlib' + input);
+    xhr.setRequestHeader("Accept", "application/json");
+    xhr.send();
+
+    xhr.onload = function () {
+        return handleAJAXonload(xhr);
+    };
+
+    e.preventDefault();
+
+    return false;
+};
+
+//getSpecific MadLib AJAX
+var getSpecificAJAX = function getSpecificAJAX(e, input) {
+    xhr = new XMLHttpRequest();
+    xhr.open("GET", "/getSpecific" + input);
+    xhr.setRequestHeader("Accept", "application/json");
+    xhr.send();
+
+    xhr.onload = function () {
+        return handleAJAXSpecificMadLib(xhr);
+    };
+
+    e.preventDefault();
+
+    return false;
+};
+
+//get the saved mad libs
+var getSavedmadlib = function getSavedmadlib(e) {
+
+    xhr = new XMLHttpRequest();
+    xhr.open('GET', '/savedMadlib');
+    xhr.setRequestHeader("Accept", "application/json");
+    xhr.send();
+
+    xhr.onload = function () {
+        return handlesavedMadlibGet(xhr, true);
+    };
+
+    e.preventDefault();
+
+    return false;
+};
+
+//put saved data to server
+var postResults = function postResults(e) {
+    var xhr = new XMLHttpRequest();
+    xhr.open("post", "/addmadlib");
+    xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xhr.setRequestHeader("Accept", "application/json");
+
+    var results = document.querySelector("#result");
+    var name = document.querySelector("#name");
+    var formData = "saveMadlib=" + results.textContent + "&name=" + name.value;
+    xhr.send(formData);
+    xhr.onload = function () {
+        return handlepostRequest(xhr);
+    };
+    e.preventDefault();
+    return false;
+};
+
+//get specific madlib setup
+var specificMadlibSetup = function specificMadlibSetup(e) {
+
+    RidElements();
+
+    var title = document.createElement("h2");
+    var input = document.createElement("input");
+    var button = document.createElement("input");
+    var div = document.createElement("div");
+
+    title.setAttribute("id", "specificTitle");
+    input.setAttribute("id", "specificInput");
+    button.setAttribute("id", "specificButton");
+    button.setAttribute("type", "button");
+    div.setAttribute("id", "SpecificDiv");
+
+    title.innerHTML = "Which one do you want?";
+    button.value = "Get this one";
+
+    title.style.position = "absolute";
+    title.style.top = "75%";
+    title.style.width = "100%";
+    title.style.textAlign = "center";
+
+    div.style.position = "absolute";
+    div.style.top = "85%";
+    div.style.width = "100%";
+
+    input.style.position = "absolute";
+    input.style.margin = "auto";
+    input.style.left = "44%";
+
+    button.style.position = "absolute";
+    button.style.left = "57%";
+
+    div.appendChild(button);
+    div.appendChild(input);
+    document.body.appendChild(title);
+    document.body.appendChild(div);
+
+    button.addEventListener("click", function (e) {
+
+        var input = document.querySelector("#specificInput").value;
+        var specificMLName = "?Input=" + input;
+        getSpecificAJAX(e, specificMLName);
+    });
+};
