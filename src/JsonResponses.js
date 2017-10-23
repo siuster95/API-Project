@@ -16,6 +16,19 @@ const page3 = {
   wordbank: ['silly word', 'last name', 'illness', 'noun(plural)', 'adjective', 'adjective', 'silly word', 'place', 'number', 'adjective'],
 };
 
+const page4 = {
+  title: 'Dragons',
+  page: 'The 0 Dragon is the 1 Dragon of all. It has 2 3, and a 4 shaped like a 5. It loves to eat 6, although it will feast on nearly anything. It is 7 and 8. You must be 9 around it, or you may end up as its meal!',
+  wordbank: ['color', 'adjective', 'adjective', 'body part(plural)', 'body part', 'noun', 'animal(plural)', 'adjective', 'adjective', 'adjective'],
+};
+
+const page5 = {
+  title: "Santa Note",
+  page: 'Dear Santa, I have been very 0 this year. I am always very 1 to my 2. I would love a few gifts for being so 3. First a 4, then a 5 and then a 6. Love, 7',
+  wordbank: ['adjective','adjective','relative','adjective','thing you want','thing you want','thing you want','your name'],
+};
+
+
 const saveMadlib = {};
 
 const crypto = require('crypto');
@@ -27,6 +40,8 @@ const pages = [];
 pages.push(page1);
 pages.push(page2);
 pages.push(page3);
+pages.push(page4);
+pages.push(page5);
 
 // send back the status, etag, the message and the object
 const respondJSON = (request, response, status, object) => {
