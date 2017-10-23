@@ -4,6 +4,7 @@
   "description": "My API project",
   "main": "./src/server.js",
   "scripts": {
+    "watch": "babel --watch ./client --out-file ./hosted/bundle.js",
     "start": "node ./src/server.js",
     "pretest": "eslint ./src --fix",
     "test": "echo \"Tests complete\""
@@ -11,6 +12,8 @@
   "author": "Johnny Siu",
   "license": "ISC",
   "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-env": "^1.6.1",
     "eslint": "^4.8.0",
     "eslint-config-airbnb": "^15.1.0",
     "eslint-plugin-import": "^2.7.0"

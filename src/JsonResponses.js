@@ -16,26 +16,46 @@ const page3 = {
   wordbank: ['silly word', 'last name', 'illness', 'noun(plural)', 'adjective', 'adjective', 'silly word', 'place', 'number', 'adjective'],
 };
 
+const saveMadlib = {};
+
+const crypto = require('crypto');
+
+let etag = crypto.createHash('sha1').update(JSON.stringify(saveMadlib));
+let digest = etag.digest('hex');
 
 const pages = [];
 pages.push(page1);
 pages.push(page2);
 pages.push(page3);
 
+// send back the status, etag, the message and the object
 const respondJSON = (request, response, status, object) => {
-  response.writeHead(status, { 'Content-Type': 'application/json' });
+  const headers = { 'Content-Type': 'application/json', etag: digest };
+
+  response.writeHead(status, headers);
   response.write(JSON.stringify(object));
   response.end();
 };
 
-const saveMadlib = {};
+
+// this is for if the request were the same
+const respondJSONMeta = (request, response, status) => {
+  const headers = {
+    'Content-Type': 'application/json',
+    etag: digest,
+  };
+
+  // send the response with headers and without json object 
+  response.writeHead(status, headers);
+  response.end();
+};
+
 
 // give back a madlib
 const madlibResponse = (request, response, titleinput) => {
   const responseJSON = {
     madlib: {},
   };
-
 
   for (let x = 0; x < pages.length; x++) {
     if (pages[x].title === titleinput) {
@@ -44,6 +64,15 @@ const madlibResponse = (request, response, titleinput) => {
   }
 
   return respondJSON(request, response, 200, responseJSON);
+};
+
+// check status of the page (head)
+const checkStatusresponse = (request, response) => {
+  if (request.headers['if-none-match'] === digest) {
+    return respondJSONMeta(request, response, 304);
+  }
+
+  return respondJSONMeta(request, response, 200);
 };
 
 // get topics 
@@ -82,6 +111,10 @@ const madlibRecieve = (request, response, bodyParams) => {
     responseJSON.id = 'Updated';
     responseJSON.message = 'Object has been updated';
     saveMadlib[bodyParams.name] = bodyParams.saveMadlib;
+
+    etag = crypto.createHash('sha1').update(JSON.stringify(saveMadlib));
+    digest = etag.digest('hex');
+
     return respondJSON(request, response, responseCode, responseJSON);
   }
   // create a new object with the name
@@ -90,6 +123,9 @@ const madlibRecieve = (request, response, bodyParams) => {
   // add saveMadlib to the object
   saveMadlib[bodyParams.name] = bodyParams.saveMadlib;
 
+  etag = crypto.createHash('sha1').update(JSON.stringify(saveMadlib));
+  digest = etag.digest('hex');
+
   // if response is created, then set our created message and sent response with a message;
   responseJSON.message = 'Created Successfully';
   return respondJSON(request, response, responseCode, responseJSON);
@@ -97,11 +133,50 @@ const madlibRecieve = (request, response, bodyParams) => {
 
 // give back a Saved madlib
 const getSavedmadlib = (request, response) => {
+  if (request.headers['if-none-match'] === digest) {
+    return respondJSONMeta(request, response, 304);
+  }
+
   const responseJSON = {
     saveMadlib,
   };
 
-  respondJSON(request, response, 200, responseJSON);
+
+  return respondJSON(request, response, 200, responseJSON);
+};
+
+// 404 page not found
+const pageNotfound = (request, response) => {
+  const responseJSON = {
+    message: 'The page you were looking for is not found',
+    id: 'notFound',
+  };
+
+    // return 404 with error message
+  respondJSON(request, response, 404, responseJSON);
+};
+
+// see if the specific Madlib exist
+const findspecificMadlib = (request, response, input) => {
+  const responseJSON = {
+    status: 'Bad',
+    message: 'There is no saved MadLib with that title',
+  };
+
+  if (input === '') {
+    responseJSON.message = "You didn't enter a title";
+    return respondJSON(request, response, 404, responseJSON);
+  }
+
+  if (!saveMadlib[input]) {
+    return respondJSON(request, response, 404, responseJSON);
+  }
+
+  responseJSON.status = 'Good';
+  responseJSON.madlib = saveMadlib[input];
+  responseJSON.message = 'Found it';
+
+  return respondJSON(request, response, 200, responseJSON);
 };
 
 
@@ -109,3 +184,6 @@ module.exports.madlibResponse = madlibResponse;
 module.exports.madlibRecieve = madlibRecieve;
 module.exports.getSavedmadlib = getSavedmadlib;
 module.exports.getTopics = getTopics;
+module.exports.checkStatusresponse = checkStatusresponse;
+module.exports.pageNotfound = pageNotfound;
+module.exports.findspecificMadlib = findspecificMadlib;

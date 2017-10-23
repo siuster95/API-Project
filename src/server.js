@@ -4,17 +4,21 @@ const query = require('querystring');
 
 const port = process.env.PORT || process.env.NODE_PORT || 3000;
 
-const htmlresponse = require('./htmlResponses.js');
+const htmlandJSresponse = require('./htmlandJSResponses.js');
 const jsonresponse = require('./JsonResponses.js');
 
 const htmlURLStruct = {
-  '/': htmlresponse.clientresponse,
+  '/': htmlandJSresponse.clientresponse,
+  '/style.css': htmlandJSresponse.styleresponse,
+  '/bundle.js': htmlandJSresponse.scriptresponse,
 };
 
 const jsonURLStruct = {
   '/madlib': jsonresponse.madlibResponse,
   '/savedMadlib': jsonresponse.getSavedmadlib,
   '/gettopics': jsonresponse.getTopics,
+  '/checkstatus': jsonresponse.checkStatusresponse,
+  '/getSpecific': jsonresponse.findspecificMadlib,
 };
 
 
@@ -49,13 +53,11 @@ const onrequest = (request, response) => {
       const bodyParams = query.parse(bodyString);
       jsonresponse.madlibRecieve(request, response, bodyParams);
     });
-  }
-  // client and css
-  if (htmlURLStruct[urlparts.pathname]) {
+  } else if (htmlURLStruct[urlparts.pathname]) {
+    // client and css
     htmlURLStruct[urlparts.pathname](request, response);
-  }
-  // get request
-  if (jsonURLStruct[urlparts.pathname]) {
+  } else if (jsonURLStruct[urlparts.pathname]) {
+    // get request
     if (urlparts.pathname === '/madlib') {
       const querystring = urlparts.query;
       const querydata = querystring.split('&');
@@ -69,9 +71,22 @@ const onrequest = (request, response) => {
       jsonresponse.madlibResponse(request, response, params.chosen);
 
       console.dir(params);
+    } else if (urlparts.pathname === '/getSpecific') {
+      const querystring = urlparts.query;
+      const querydata = querystring.split('&');
+      const params = {};
+      for (let x = 0; x < querydata.length; x++) {
+        const temp = querydata[x].split('=');
+        temp[1] = decodeURIComponent(temp[1]);
+        params[temp[0]] = temp[1];
+      }
+
+      jsonresponse.findspecificMadlib(request, response, params.Input);
     } else {
       jsonURLStruct[urlparts.pathname](request, response);
     }
+  } else {
+    jsonresponse.pageNotfound(request, response);
   }
 };
 
