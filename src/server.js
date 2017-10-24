@@ -57,7 +57,7 @@ const onrequest = (request, response) => {
     // client and css
     htmlURLStruct[urlparts.pathname](request, response);
   } else if (jsonURLStruct[urlparts.pathname]) {
-    // get request
+    // get request. Borrowed from https://stackoverflow.com/questions/8486099/how-do-i-parse-a-url-query-parameters-in-javascript
     if (urlparts.pathname === '/madlib') {
       const querystring = urlparts.query;
       const querydata = querystring.split('&');
